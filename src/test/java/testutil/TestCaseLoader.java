@@ -1,7 +1,5 @@
 package testutil;
 
-import scheduler.Task;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -21,9 +19,13 @@ public class TestCaseLoader {
             if (parts.length == 3) {
                 TestingTask task = new TestingTask(parts[0], parts[1], LocalTime.parse(parts[2]));
                 schedule.add(task);
-            } else if (parts.length == 1 && parts[0].equals("")) {
+            } else if (parts.length == 1 && parts[0].equals("OR")) {
                 schedules.add(schedule);
                 schedule = new ArrayList<>();
+            } else if (parts.length == 1 && parts[0].equals("") || parts[0].equals("\n")) {
+
+            } else if (parts.length == 0) {
+
             } else {
                 throw new IllegalArgumentException("Invalid schedule format: " + line);
             }

@@ -7,12 +7,9 @@ import testutil.TestCaseLoader;
 import testutil.TestingTask;
 
 import java.io.IOException;
-import java.nio.file.Path;
+
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SchedulerTest {
 
@@ -44,10 +41,6 @@ class SchedulerTest {
                 orders
         );
         List<Task> calculated_schedule = scheduler.scheduleTasks();
-
-//        List<TestingTask> calculated_schedule = tasks.stream()
-//                .map(task -> new TestingTask(task.getOrder().getOrderId(), task.getPickerId(), task.getPickingStartTime()))
-//                .collect(Collectors.toList());
 
         boolean any_match = expected_schedules.stream()
                 .anyMatch(schedule -> TestingTask.compareList(schedule, calculated_schedule));
