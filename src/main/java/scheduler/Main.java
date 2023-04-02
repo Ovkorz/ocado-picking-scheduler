@@ -20,7 +20,15 @@ public class Main {
             Store store = fileLoader.loadStore(storeFilePath);
             List<Order> orders = fileLoader.loadOrders(ordersFilePath);
 
+            Scheduler scheduler = new Scheduler(
+                    store.getPickers(),
+                    store.getPickingStartTime(),
+                    store.getPickingEndTime(),
+                    orders
+            );
+            scheduler.scheduleTasks();
 
+            scheduler.printResult();
 
         } catch (IOException e) {
             System.err.println("Error loading data: " + e.getMessage());
