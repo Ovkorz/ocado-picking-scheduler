@@ -50,6 +50,7 @@ public class Scheduler {
                         current_task_index++;
                     }
 
+                    current_task_index--;
                     LocalTime deadline_adjusted;
                     if (current_task_index == current_picker_todo.size() - 1 || current_picker_todo.size() == 0) {
                         deadline_adjusted = order.getCompleteBy();
@@ -61,7 +62,7 @@ public class Scheduler {
                     }
 
                     current_picker_todo.add(
-                            current_task_index,
+                            (current_task_index < 0)? 0: current_task_index,
                             new Task(
                                     pickers.get(picker_index),
                                     order,

@@ -22,6 +22,7 @@ tasks.test {
 }
 
 tasks.jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes["Main-Class"] = "scheduler.Main"
