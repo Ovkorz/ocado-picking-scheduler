@@ -3,7 +3,7 @@ package scheduler;
 import java.time.LocalTime;
 
 public class Task {
-    private String pickerId;
+    private final String pickerId;
     private Order order;
     private LocalTime pickingStartTime;
 
