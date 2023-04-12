@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+
 public class Scheduler {
 
     protected List<String> pickers;
@@ -23,7 +24,7 @@ public class Scheduler {
 
     public List<Task> scheduleTasks() {
         List<List<Task>> pickers_todo = new ArrayList<>();
-        for (String picker : pickers) {
+        for (String ignored : pickers) {
             pickers_todo.add(new ArrayList<>());
         }
         int picker_index = 0;
@@ -41,28 +42,43 @@ public class Scheduler {
 
             while (!scheduled) {
                 List<Task> current_picker_todo = pickers_todo.get(picker_index);
-                if (calculateFreeTimeBefore(order.getCompleteBy(), current_picker_todo).compareTo(order.getPickingTime()) >= 0) {
+                if(current_picker_todo.size() == 0){
+                    current_picker_todo.add(
+                            new Task(
+                                    pickers.get(picker_index),
+                                    order,
+                                    order.getCompleteBy().minus(order.getPickingTime())
+                            )
+                    );
+                    scheduled = true;
+                }
+                else if (calculateFreeTimeBefore(order.getCompleteBy(), current_picker_todo).compareTo(order.getPickingTime()) >= 0) {
                     int current_task_index = 0;
+                    LocalTime orderDeadline = order.getCompleteBy();
                     while (current_task_index < current_picker_todo.size()) {
-                        if (order.getCompleteBy().isBefore(current_picker_todo.get(current_task_index).getPickingStartTime())) {
+                        Task currentTask = current_picker_todo.get(current_task_index);
+                        LocalTime currentTaskStart = currentTask.getPickingStartTime();
+                        if (taskDeadlineOverlap(orderDeadline,currentTask)) {
+                            break;
+                        }
+                        else if (currentTaskStart.isAfter(orderDeadline) || currentTaskStart.equals(orderDeadline)){
                             break;
                         }
                         current_task_index++;
                     }
 
-                    current_task_index--;
                     LocalTime deadline_adjusted;
-                    if (current_task_index == current_picker_todo.size() - 1 || current_picker_todo.size() == 0) {
-                        deadline_adjusted = order.getCompleteBy();
+                    if (current_task_index == current_picker_todo.size()) {
+                        deadline_adjusted = (orderDeadline.isAfter(pickingEndTime)) ? pickingEndTime : orderDeadline;
                     } else {
-                        LocalTime next_task_start = current_picker_todo.get(current_task_index + 1).getPickingStartTime();
+                        LocalTime next_task_start = current_picker_todo.get(current_task_index).getPickingStartTime();
                         LocalTime current_task_deadline = order.getCompleteBy();
 
                         deadline_adjusted = (current_task_deadline.isAfter(next_task_start)) ? next_task_start : current_task_deadline;
                     }
 
                     current_picker_todo.add(
-                            (current_task_index < 0)? 0: current_task_index,
+                            current_task_index,
                             new Task(
                                     pickers.get(picker_index),
                                     order,
@@ -83,8 +99,9 @@ public class Scheduler {
                         LocalTime next_task_start_time = current_picker_todo.get(current_task_index + 1).getPickingStartTime();
                         if (current_task_finish_time.isAfter(next_task_start_time)) {
                             Duration offset = Duration.between(next_task_start_time, current_task_finish_time);
-                            current_picker_todo.get(current_task_index).setPickingStartTime(
-                                    next_task_start_time.minus(offset)
+                            LocalTime currentStartTime = current_task.getPickingStartTime();
+                            current_task.setPickingStartTime(
+                                    currentStartTime.minus(offset)
                             );
                         } else {
                             break;
@@ -96,7 +113,6 @@ public class Scheduler {
 
                         current_task_index--;
                     }
-
 
                 } else {
                     if (checked_pickers < pickers.size()) {
@@ -116,6 +132,7 @@ public class Scheduler {
                     task_deleted = true;
                 }
             }
+
         }
         List<Task> result = new ArrayList<>();
         for (List<Task> picker_todo_i : pickers_todo) {
@@ -179,6 +196,11 @@ public class Scheduler {
         return freeTime;
     }
 
+    /**
+     * @param order Order object to look for a time slot for.
+     * @param pickers_todo List of schedules to traverse.
+     * @return The longest task of all pickers' todos with deadline before given time.
+     */
     private Task longestTaskBefore(Order order, List<List<Task>> pickers_todo) {
 
         Task longest_suitable_task = pickers_todo.get(0).get(0);
@@ -198,6 +220,24 @@ public class Scheduler {
         }
 
         return longest_suitable_task;
+    }
+
+    /**
+     * Determines whether there is an overlap between the deadline and the task.
+     *
+     * @param deadline the deadline time to check for overlap
+     * @param task the task to check for overlap
+     * @return true if there is an overlap, false otherwise
+     */
+    private boolean taskDeadlineOverlap(LocalTime deadline, Task task) {
+        // Get the start time of the picking process for the task
+        LocalTime taskStart = task.getPickingStartTime();
+
+        // Get the deadline time for the order that the task is part of
+        LocalTime taskEnd = task.getCompletionTime();
+
+        return  taskStart.isBefore(deadline) &&
+                taskEnd.isAfter(deadline) || taskEnd.equals(deadline);
     }
 
     void printResult() {

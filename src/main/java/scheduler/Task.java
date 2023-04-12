@@ -7,10 +7,14 @@ public class Task {
     private Order order;
     private LocalTime pickingStartTime;
 
+    private LocalTime completionTime;
+
     public Task(String pickerId, Order order, LocalTime pickingStartTime) {
         this.pickerId = pickerId;
         this.order = order;
         this.pickingStartTime = pickingStartTime;
+
+        completionTime = pickingStartTime.plus(order.getPickingTime());
     }
 
     public String getPickerId() {
@@ -27,6 +31,11 @@ public class Task {
 
     public void setOrder(Order order) {
         this.order = order;
+        completionTime = pickingStartTime.plus(order.getPickingTime());
+    }
+
+    public LocalTime getCompletionTime() {
+        return completionTime;
     }
 
     public LocalTime getPickingStartTime() {
@@ -35,5 +44,6 @@ public class Task {
 
     public void setPickingStartTime(LocalTime pickingStartTime) {
         this.pickingStartTime = pickingStartTime;
+        completionTime = pickingStartTime.plus(order.getPickingTime());
     }
 }
