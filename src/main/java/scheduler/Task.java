@@ -21,10 +21,6 @@ public class Task {
         return pickerId;
     }
 
-    public void setPickerId(String pickerId) {
-        this.pickerId = pickerId;
-    }
-
     public Order getOrder() {
         return order;
     }

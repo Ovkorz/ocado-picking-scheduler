@@ -204,7 +204,6 @@ public class Scheduler {
     private Task longestTaskBefore(Order order, List<List<Task>> pickers_todo) {
 
         Task longest_suitable_task = pickers_todo.get(0).get(0);
-        int picker_index;
         Duration order_duration = order.getPickingTime();
         LocalTime order_deadline = order.getCompleteBy();
         for (List<Task> picker_todo_i : pickers_todo) {
