@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine
+FROM jenkins/agent:alpine-jdk11
 
 CMD ["gradle"]
 
