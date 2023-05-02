@@ -1,0 +1,9 @@
+version: '3.9'
+# compose file used for running final container with default bind mounts
+
+services:
+  picking-scheduler:
+    image: simonnomnom/picking-scheduler:java17
+    tty: true
+    volumes:
+      - ./tasks:/tasks
