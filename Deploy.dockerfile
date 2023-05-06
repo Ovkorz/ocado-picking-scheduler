@@ -1,6 +1,6 @@
-FROM adoptopenjdk/openjdk17:jre-17.0.0_35_ubuntu
+FROM amazoncorretto:17-alpine3.17
 WORKDIR /app
-COPY myproject/build/libs/*.jar /app
-
+COPY build/libs/*.jar /app
+COPY src/test/resources/advanced-optimize-order-count/* /app/resources
 
 CMD ["bin/bash"]
