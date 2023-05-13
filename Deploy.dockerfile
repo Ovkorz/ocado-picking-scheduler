@@ -3,4 +3,4 @@ WORKDIR /app
 COPY build/libs/*.jar /app
 COPY src/test/resources/advanced-optimize-order-count/* /app/resources
 
-CMD ["bin/sh"]
+CMD ["sh"]
