@@ -1,14 +1,4 @@
-# FROM eclipse-temurin:17-jdk-alpine
-# FROM jenkins/agent:alpine-jdk11
-
-# CMD ["gradle"]
-
-# ENV GRADLE_HOME /opt/gradle
-
-# Use the Jenkins agent image as the base
-FROM jenkins/agent:alpine-jdk11
-
-USER root
+FROM eclipse-temurin:17-jdk-alpine
 
 # Install OpenJDK 17
 RUN apk add --no-cache openjdk17
@@ -40,32 +30,47 @@ WORKDIR /home/gradle
 RUN set -o errexit -o nounset \
     && echo "Installing VCSes" \
     && apk add --no-cache \
-      git \
-      git-lfs \
-      mercurial \
-      subversion \
+        unzip \
+        wget \
+        \
+        bzr \
+        git \
+        git-lfs \
+        mercurial \
+        subversion \
+        /
+        docker.io \
+        openssh-client \
+        openssh-server \
+    && rm --recursive --force /var/lib/apt/lists/* \
     \
     && echo "Testing VCSes" \
     && which git \
     && which git-lfs \
     && which hg \
-    && which svn
+    && which svn \
+    && which docker
 
-ENV GRADLE_VERSION 8.1
-ARG GRADLE_DOWNLOAD_SHA256=a62c5f99585dd9e1f95dab7b9415a0e698fa9dd1e6c38537faa81ac078f4d23e
+ENV GRADLE_VERSION 8.1.1
+ARG GRADLE_DOWNLOAD_SHA256=e111cb9948407e26351227dabce49822fb88c37ee72f1d1582a69c68af2e702f
 RUN set -o errexit -o nounset \
     && echo "Downloading Gradle" \
     && wget --no-verbose --output-document=gradle.zip "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" \
     \
     && echo "Checking download hash" \
-    && echo "${GRADLE_DOWNLOAD_SHA256} *gradle.zip" | sha256sum -c - \
+    && echo "${GRADLE_DOWNLOAD_SHA256} *gradle.zip" | sha256sum --check - \
     \
     && echo "Installing Gradle" \
     && unzip gradle.zip \
     && rm gradle.zip \
     && mv "gradle-${GRADLE_VERSION}" "${GRADLE_HOME}/" \
-    && ln -s "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle \
+    && ln --symbolic "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle \
     \
     && echo "Testing Gradle installation" \
     && gradle --version
 
+RUN groupadd docker \
+    && usermod -aG docker $USER \
+    && newgrp docker
+
+RUN docker -v
