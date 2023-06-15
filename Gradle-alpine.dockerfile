@@ -15,13 +15,15 @@ ENV PATH "$PATH:$GRADLE_HOME/bin"
 
 RUN set -o errexit -o nounset \
     && echo "Adding gradle user and group" \
-    && addgroup --system gradle \
-    && adduser --system --ingroup gradle --shell /bin/ash gradle \
+    && addgroup --system --gid 1001 gradle \
+    && addgroup --system --gid 1002 docker \
+    && adduser --system --ingroup gradle --ingroup docker --uid 1000 --shell /bin/ash gradle \
+    # && useradd --system --ingroup docker --shell /bin/ash gradle \
     && mkdir /home/gradle/.gradle \
     && chown -R gradle:gradle /home/gradle \
     \
     && echo "Symlinking root Gradle cache to gradle Gradle cache" \
-    && ln -s /home/gradle/.gradle /root/.gradle
+    && ln -s /home/gradle/.gradle /root/.gradle 
 
 VOLUME /home/gradle/.gradle
 
@@ -33,22 +35,17 @@ RUN set -o errexit -o nounset \
         unzip \
         wget \
         \
-        bzr \
         git \
         git-lfs \
-        mercurial \
-        subversion \
-        /
-        docker.io \
+        \
+        docker \
         openssh-client \
-        openssh-server \
-    && rm --recursive --force /var/lib/apt/lists/* \
+        openssh-server    \
+    && apk cache clean \
     \
     && echo "Testing VCSes" \
     && which git \
     && which git-lfs \
-    && which hg \
-    && which svn \
     && which docker
 
 ENV GRADLE_VERSION 8.1.1
@@ -58,19 +55,15 @@ RUN set -o errexit -o nounset \
     && wget --no-verbose --output-document=gradle.zip "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" \
     \
     && echo "Checking download hash" \
-    && echo "${GRADLE_DOWNLOAD_SHA256} *gradle.zip" | sha256sum --check - \
+    && echo "${GRADLE_DOWNLOAD_SHA256} *gradle.zip" | sha256sum -c - \
     \
     && echo "Installing Gradle" \
     && unzip gradle.zip \
     && rm gradle.zip \
     && mv "gradle-${GRADLE_VERSION}" "${GRADLE_HOME}/" \
-    && ln --symbolic "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle \
+    && ln -s "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle \
     \
     && echo "Testing Gradle installation" \
-    && gradle --version
+    && gradle --version 
 
-RUN groupadd docker \
-    && usermod -aG docker $USER \
-    && newgrp docker
 
-RUN docker -v
